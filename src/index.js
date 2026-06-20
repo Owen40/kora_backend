@@ -7,6 +7,7 @@ require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./Routes/authRoutes');
+const restaurantRoutes = require('./Routes/restaurantRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5070;
@@ -30,6 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/restaurants', restaurantRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
