@@ -8,11 +8,13 @@ require('dotenv').config();
 // Import routes
 const authRoutes = require('./Routes/authRoutes');
 const restaurantRoutes = require('./Routes/restaurantRoutes');
+const categoryRoutes = require('./Routes/categoryRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5070;
 
 app.use(helmet());
+app.use(express.json());
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -30,8 +32,10 @@ app.get('/health', (req, res) => {
   });
 });
 
+// The system routes
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

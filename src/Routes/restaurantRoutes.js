@@ -17,7 +17,7 @@ router.get('/:id',protect, getRestaurantById);
 
 router.post('/', protect, authorizeRoles('admin'), upload.single('image'), createRestaurant);
 
-router.put('/:id', protect, authorizedRoles('admin'), upload.single('image'), updateRestaurant);
-router.delete('/:id', protect, authorizedRoles('admin'), deleteRestaurant);
+router.put('/:id', protect, authorizeRoles('admin'), upload.single('image'), updateRestaurant);
+router.delete('/:id', protect, authorizeRoles('admin'), deleteRestaurant);
 
 module.exports = router;
