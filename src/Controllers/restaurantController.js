@@ -12,6 +12,7 @@ const getSPacesKeyFromUrl = (imageUrl) => {
 
     return imageUrl.replace(`${publicUrl}/`, '');
 };;
+
 exports.createRestaurant = async (req, res) => {
     try {
         const { name, opening_time, closing_time, phone, cuisine, delivery_fee, dish_count, estimated_time } = req.body;

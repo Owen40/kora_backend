@@ -2,7 +2,7 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/cl
 
 const spacesClient = new S3Client({
     endpoint: process.env.DO_SPACES_ENDPOINT,
-    region: process.env.DO_SPACES_KEY,
+    region: process.env.DO_SPACES_REGION,
     credentials: {
         accessKeyId: process.env.DO_SPACES_KEY,
         secretAccessKey: process.env.DO_SPACES_SECRET,
@@ -31,7 +31,7 @@ const deleteFromSpaces = async ({ key }) => {
     await spacesClient.send(
         new DeleteObjectCommand({
             Bucket: process.env.DO_SPACES_BUCKET,
-            key: key,
+            Key: key,
         })
     );
 };
