@@ -1,6 +1,6 @@
 const path = require('path');
 const { query } = require('../db');
-const { uploadToSpaces, deleteFromSpaces } = require('../config/spaces');
+const { uploadToR2, deleteFromR2 } = require('../config/spaces');
 
 const slugify = (text) => {
     return text
@@ -188,7 +188,7 @@ exports.createDish = async (req, res) => {
 
             const key = `Dishes/${restaurantFolder}/${dish.id}.${fileExtension}`;
 
-            imageUrl = await uploadToSpaces({
+            imageUrl = await uploadToR2({
                 file: req.file,
                 key,
             });
@@ -401,7 +401,7 @@ exports.updateDish = async (req, res) => {
             const oldKey = getSpacesKeyFromUrl(existingDish.image_url);
 
             if (oldKey) {
-                await deleteFromSpaces({ key: oldKey });
+                await deleteFromR2({ key: oldKey });
             }
 
             const restaurantFolder = slugify(existingDish.restaurant_name);
@@ -409,7 +409,7 @@ exports.updateDish = async (req, res) => {
 
             const newKey = `restaurants/${restaurantFolder}/dishes/${id}${ext}`;
 
-            imageUrl = await uploadToSpaces({
+            imageUrl = await uploadToR2({
                 file: req.file,
                 key: newKey,
             });
@@ -492,7 +492,7 @@ exports.deleteDish = async (req, res) => {
         const imageKey = getSpacesKeyFromUrl(dish.image_url);
 
         if (imageKey) {
-            await deleteFromSpaces({ key: imageKey });
+            await deleteFromR2({ key: imageKey });
         }
 
         await query(

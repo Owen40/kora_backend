@@ -10,6 +10,7 @@ const authRoutes = require('./Routes/authRoutes');
 const restaurantRoutes = require('./Routes/restaurantRoutes');
 const categoryRoutes = require('./Routes/categoryRoutes');
 const dishRoutes = require('./Routes/dishesRoutes');
+const userRoutes = require('./Routes/userRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5070;
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/dishes', dishRoutes);
+app.use('/api/users', userRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

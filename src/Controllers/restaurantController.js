@@ -1,5 +1,5 @@
 const { query } = require('../db');
-const { uploadToSpaces, deleteFromSpaces } = require('../config/spaces');
+const { uploadToR2, deleteFromR2 } = require('../config/spaces');
 
 const getSPacesKeyFromUrl = (imageUrl) => {
     if (!imageUrl) return null;
@@ -61,7 +61,7 @@ exports.createRestaurant = async (req, res) => {
         if (req.file) {
             const key = `restaurants/${restaurant.id}`;
 
-            imageUrl = await uploadToSpaces({
+            imageUrl = await uploadToR2({
                 file: req.file,
                 key,
             });
@@ -226,7 +226,7 @@ exports.updateRestaurant = async (req, res) => {
         if (req.file) {
             const key = `restaurants/${id}`;
 
-            imageUrl = await uploadToSpaces({
+            imageUrl = await uploadToR2({
                 file: req.file,
                 key,
             });
@@ -306,7 +306,7 @@ exports.deleteRestaurant = async (req, res) => {
             const imageKey = getSpacesKeyFromUrl(restaurant.image_url);
 
             if (imageKey) {
-                await deleteFromSpaces({ key: imageKey });
+                await deleteFromR2({ key: imageKey });
             }
         }
 
