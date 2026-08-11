@@ -268,6 +268,15 @@ exports.verifyOtp = async (req, res) => {
             [otpRecord.id]
         );
 
+        await query(
+            `
+            UPDATE users
+            SET last_login_at = NOW()
+            WHERE id = $1
+            `,
+            [user.id]
+        );
+
         const token = generateToken(user.id, user.role);
 
         return res.status(200).json({
