@@ -13,6 +13,21 @@ const {
     sendResetPasswordEmail
 } = require('../services/emailService');
 
+const getCleanIp = (req) => {
+    const forwardedIps = req.headers['x-forwarded-for'];
+    let ip = forwardedIps ? forwardedIps.split(',')[0].trim() : req.ip;
+
+    if (ip && ip.startsWith('::ffff:')) {
+        ip = ip.replace('::ffff:', '');
+    }
+    
+    if (ip === '::1') {
+        ip = '127.0.0.1';
+    }
+
+    return ip;
+};
+
 const generateToken = (userId, role) => {
     return jwt.sign(
         {
