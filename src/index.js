@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 5070;
 const allowedOrigins = [ 'https://kora.bmsdyna.live', 'http://localhost:3000', 'http://localhost:5173' ];
 
 app.use(cors({ origin: allowedOrigins }));
+app.set('trust proxy', true);
 
 app.use(helmet());
 app.use(express.json());
