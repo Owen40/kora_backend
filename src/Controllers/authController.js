@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -160,6 +162,13 @@ exports.login = async (req, res) => {
 
         const user = result.rows[0];
 
+        if (user.role === 'user') {
+            return res.status(403).json({
+                success: false,
+                message: "oops! You're trying to sneak into the pantry. Admins only, please!"
+            })
+        }
+
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if (!isPasswordCorrect) {
@@ -214,7 +223,7 @@ exports.verifyOtp = async (req, res) => {
 
         const userResult = await query(
             `
-      SELECT id, email, first_name, role
+      SELECT id, email, first_name, last_name, role
       FROM users
       WHERE email = $1
       `,
