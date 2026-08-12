@@ -152,7 +152,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, portal } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -179,11 +179,11 @@ exports.login = async (req, res) => {
 
         const user = result.rows[0];
 
-        if (user.role === 'user') {
+        if (portal === 'admin' && user.role === 'user') {
             return res.status(403).json({
                 success: false,
-                message: "oops! You're trying to sneak into the pantry. Admins only, please!"
-            })
+                message: "Oops! You're trying to sneak into the pantry. Admins only, please!"
+            });
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
