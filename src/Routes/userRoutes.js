@@ -12,12 +12,12 @@ const {
     updateUserRole
  } = require('../Controllers/userController');
 
- const authMiddleware = require('../Middleware/authMiddleware');
+ const { protect, authorizeRoles} = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', authMiddleware, getAllUsers);
-router.put('/:id/role', authMiddleware, updateUserRole);
+router.get('/', protect, authorizeRoles('admin'), getAllUsers);
+router.put('/:id/role', protect, authorizeRoles('admin'), updateUserRole);
 
 router.get('/me/allergens', getMyAllergens);
 router.post('/me/allergens', addMyAllergen);

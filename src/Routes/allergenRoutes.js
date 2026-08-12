@@ -5,7 +5,6 @@ const {
     getAllergenById,
     createAllergen,
     updateAllergen,
-    updateAllergen,
     deleteAllergen
 } = require('../Controllers/allergenController');
 
