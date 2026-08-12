@@ -198,10 +198,10 @@ const sendWelcomeEmail = async ({ email, firstName }) => {
   });
 };
 
-const sendOtpEmail = async ({ email, firstName, otp }) => {
+const sendOtpEmail = async ({ email, firstName, otp, ipAddress, location, deviceInfo }) => {
   return sendEmail({
     to: email,
-    subject: 'Your OTP Code',
+    subject: 'Your OTP Code & Login Attempt Details',
     html: emailLayout({
       title: 'Your OTP Code',
       previewText: `Your OTP code is ${otp}. It expires in 10 minutes.`,
@@ -241,7 +241,7 @@ const sendOtpEmail = async ({ email, firstName, otp }) => {
         </div>
 
         <p style="
-          margin: 0 0 12px;
+          margin: 0 0 24px;
           color: ${colors.text};
           font-size: 15px;
           line-height: 1.7;
@@ -250,12 +250,36 @@ const sendOtpEmail = async ({ email, firstName, otp }) => {
           This code will expire in <strong>10 minutes</strong>.
         </p>
 
+        <!-- Security Details Block -->
+        <div style="
+          background-color: #f9fafb;
+          border: 1px solid #e5e7eb;
+          padding: 16px;
+          border-radius: 10px;
+          margin-bottom: 24px;
+        ">
+          <h3 style="margin: 0 0 12px; color: ${colors.text}; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Login Attempt Details
+          </h3>
+          <ul style="
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            color: ${colors.text};
+            font-size: 14px;
+            line-height: 1.6;
+          ">
+            <li style="margin-bottom: 6px;"><strong>Device:</strong> ${deviceInfo}</li>
+            <li style="margin-bottom: 6px;"><strong>Location:</strong> ${location}</li>
+            <li><strong>IP Address:</strong> ${ipAddress}</li>
+          </ul>
+        </div>
+
         <div style="
           background-color: #fff5f1;
           border-left: 4px solid ${colors.button};
           padding: 14px 16px;
           border-radius: 10px;
-          margin-top: 24px;
         ">
           <p style="
             margin: 0;
@@ -263,7 +287,7 @@ const sendOtpEmail = async ({ email, firstName, otp }) => {
             font-size: 14px;
             line-height: 1.6;
           ">
-            If you did not request this code, you can safely ignore this email.
+            If you did not request this code, your password may be compromised. Please ignore this email and reset your password immediately.
           </p>
         </div>
       `,

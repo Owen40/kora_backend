@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { query } = require('../db');
+const geoip = require('geoip-lite');
+const UAParser = require('ua-parser-js');
 
 const {
     sendWelcomeEmail,
@@ -182,6 +184,17 @@ exports.login = async (req, res) => {
 
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+        const clientIp = getCleanIp(req);
+        const userAgent = req.headers['user-agent'];
+    
+        const geo = geoip.lookup(clientIp);
+        const location = geo ? `${geo.city}, ${geo.country}` : 'Unknown Location';
+
+        const parser = new UAParser(userAgent);
+        const browser = parser.getBrowser().name || 'Unknown Browser';
+        const os = parser.getOS().name || 'Unknown OS';
+        const readableDeviceInfo = `${browser} on ${os}`;
+
         await query(`
             INSERT INTO otp (user_id, otp_code, ip_address, device_info, expires_at)
             VALUES ($1, $2, $3, $4, $5)
@@ -192,6 +205,9 @@ exports.login = async (req, res) => {
             email: user.email,
             firstName: user.first_name || 'User',
             otp,
+            ipAddress: clientIp,
+            location,
+            deviceINfo: readableDeviceInfo
         });
 
         return res.status(200).json({
