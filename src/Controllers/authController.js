@@ -20,7 +20,7 @@ const getCleanIp = (req) => {
     if (ip && ip.startsWith('::ffff:')) {
         ip = ip.replace('::ffff:', '');
     }
-    
+
     if (ip === '::1') {
         ip = '127.0.0.1';
     }
@@ -201,14 +201,23 @@ exports.login = async (req, res) => {
 
         const clientIp = getCleanIp(req);
         const userAgent = req.headers['user-agent'];
-    
+        let readableDeviceInfo = 'Unknown Device';
+
         const geo = geoip.lookup(clientIp);
         const location = geo ? `${geo.city}, ${geo.country}` : 'Unknown Location';
 
-        const parser = new UAParser(userAgent);
-        const browser = parser.getBrowser().name || 'Unknown Browser';
-        const os = parser.getOS().name || 'Unknown OS';
-        const readableDeviceInfo = `${browser} on ${os}`;
+        if (userAgent.includes('CFNetwork') || userAgent.includes('Darwin')) {
+            readableDeviceInfo = 'Kora iOS App';
+        } else if (userAgent.includes('Kora')) {
+            // Catch-all for your app if it runs on Android/other platforms
+            readableDeviceInfo = 'Kora Mobile App';
+        } else {
+            // 2. Fall back to the standard parser for web traffic
+            const parser = new UAParser(userAgent);
+            const browser = parser.getBrowser().name || 'Unknown Browser';
+            const os = parser.getOS().name || 'Unknown OS';
+            readableDeviceInfo = `${browser} on ${os}`;
+        }
 
         await query(`
             INSERT INTO otp (user_id, otp_code, ip_address, device_info, expires_at)
@@ -222,7 +231,7 @@ exports.login = async (req, res) => {
             otp,
             ipAddress: clientIp,
             location,
-            deviceINfo: readableDeviceInfo
+            deviceInfo: readableDeviceInfo
         });
 
         return res.status(200).json({
