@@ -13,6 +13,7 @@ const dishRoutes = require('./Routes/dishesRoutes');
 const userRoutes = require('./Routes/userRoutes');
 const addressRoutes = require('./Routes/addressRoutes');
 const allergenRoutes = require('./Routes/allergenRoutes');
+const adminDashRoutes = require('./Routes/adminDashRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5070;
@@ -49,6 +50,7 @@ app.use('/api/dishes', dishRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/allergens', allergenRoutes);
+app.use('/api/admin', adminDashRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
