@@ -280,3 +280,33 @@ exports.removeDishAllergen = async (req, res) => {
         return handleDatabaseError(error, res);
     }
 };
+
+exports.getAllergenDishes = async (req, res) => {
+    try {
+        // The id here will come from the /allergens/:id/dishes route
+        const { id } = req.params;
+
+        const result = await query(
+            `
+            SELECT
+                d.id,
+                d.name,
+                r.name AS "restaurantName"
+            FROM dish_allergens da
+            INNER JOIN dishes d ON da.dish_id = d.id
+            LEFT JOIN restaurants r ON d.restaurant_id = r.id
+            WHERE da.allergen_id = $1
+            ORDER BY d.name ASC
+            `,
+            [id]
+        );
+
+        return res.status(200).json({
+            success: true,
+            count: result.rows.length,
+            dishes: result.rows,
+        });
+    } catch (error) {
+        return handleDatabaseError(error, res);
+    }
+};

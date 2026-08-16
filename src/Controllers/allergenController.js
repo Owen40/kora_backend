@@ -30,17 +30,20 @@ exports.getAllergens = async (req, res) => {
         const result = await query(
             `
             SELECT
-                id,
-                name,
-                description,
-                created_at
-            FROM allergens
+                a.id,
+                a.name,
+                a.description,
+                a.created_at,
+                COUNT(da.dish_id)::INTEGER AS "dishCount"
+            FROM allergens a
+            LEFT JOIN dish_allergens da ON a.id = da.allergen_id
             WHERE (
                 $1::TEXT IS NULL
-                OR name ILIKE '%' || $1 || '%'
-                OR description ILIKE '%' || $1 || '%'
+                OR a.name ILIKE '%' || $1 || '%'
+                OR a.description ILIKE '%' || $1 || '%'
             )
-            ORDER BY name ASC
+            GROUP BY a.id
+            ORDER BY a.name ASC
             `,
             [search]
         );
