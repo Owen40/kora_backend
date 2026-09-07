@@ -59,7 +59,6 @@ CREATE TABLE dishes (
     image_url TEXT,
     price NUMERIC(10,2) NOT NULL,
     prep_time_minutes INTEGER,
-    customization JSONB,
     available BOOLEAN DEFAULT TRUE,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -250,3 +249,123 @@ CREATE INDEX idx_password_reset_user_id ON password_reset_tokens(user_id);
 CREATE INDEX idx_password_reset_token ON password_reset_tokens(token);
 CREATE INDEX idx_password_reset_expires_at ON password_reset_tokens(expires_at);
 CREATE INDEX idx_password_reset_used ON password_reset_tokens(used);
+
+-- RESTAURANT REVIEWS
+
+CREATE TABLE restaurant_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (user_id, order_id)
+);
+
+CREATE INDEX idx_restaurant_reviews_restaurant_id ON restaurant_reviews(restaurant_id);
+CREATE INDEX idx_restaurant_reviews_user_id ON restaurant_reviews(user_id);
+CREATE INDEX idx_restaurant_reviews_order_id ON restaurant_reviews(order_id);
+CREATE INDEX idx_restaurant_reviews_rating ON restaurant_reviews(rating);
+
+-- FAVORITE RESTAURANTS
+
+CREATE TABLE favorite_restaurants (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, restaurant_id)
+);
+
+CREATE INDEX idx_favorite_restaurants_user_id ON favorite_restaurants(user_id);
+CREATE INDEX idx_favorite_restaurants_restaurant_id ON favorite_restaurants(restaurant_id);
+
+-- ORDER STATUS HISTORY
+
+CREATE TABLE order_status_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    status VARCHAR(50) NOT NULL,
+    changed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
+CREATE INDEX idx_order_status_history_status ON order_status_history(status);
+CREATE INDEX idx_order_status_history_created_at ON order_status_history(created_at);
+
+-- MODIFIER GROUPS
+
+CREATE TABLE modifier_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    dish_id UUID NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    required BOOLEAN DEFAULT FALSE,
+    min_selections INTEGER DEFAULT 0 CHECK (min_selections >= 0),
+    max_selections INTEGER DEFAULT 1 CHECK (max_selections >= 1),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CHECK (max_selections >= min_selections)
+);
+
+CREATE INDEX idx_modifier_groups_dish_id ON modifier_groups(dish_id);
+
+-- MODIFIERS
+
+CREATE TABLE modifiers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    modifier_group_id UUID NOT NULL REFERENCES modifier_groups(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    price_delta NUMERIC(12,2) DEFAULT 0 CHECK (price_delta >= 0),
+    available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_modifiers_modifier_group_id ON modifiers(modifier_group_id);
+CREATE INDEX idx_modifiers_available ON modifiers(available);
+
+    -- ORDER ITEM MODIFIERS
+
+CREATE TABLE order_item_modifiers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_item_id UUID NOT NULL REFERENCES order_items(id) ON DELETE CASCADE,
+    modifier_id UUID REFERENCES modifiers(id) ON DELETE SET NULL,
+    modifier_name VARCHAR(100) NOT NULL,
+    price_delta NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (price_delta >= 0),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_order_item_modifiers_order_item_id ON order_item_modifiers(order_item_id);
+CREATE INDEX idx_order_item_modifiers_modifier_id ON order_item_modifiers(modifier_id);
+
+-- CARTS
+
+CREATE TABLE carts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    restaurant_id UUID NOT  REFERENCES restaurants(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (user_id, restaurant_id)
+);
+
+CREATE INDEX idx_carts_user_id ON carts(user_id);
+CREATE INDEX idx_carts_restaurant_id ON carts(restaurant_id);
+
+    -- CART ITEMS
+
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cart_id UUID NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
+    dish_id UUID NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    unit_price NUMERIC(12,2) NOT NULL CHECK (unit_price >= 0),
+    customization JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_cart_items_cart_id ON cart_items(cart_id);
+CREATE INDEX idx_cart_items_dish_id ON cart_items(dish_id);
