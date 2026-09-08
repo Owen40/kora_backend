@@ -79,11 +79,10 @@ exports.createDish = async (req, res) => {
             description,
             price,
             prep_time_minutes,
-            customization,
             available
         } = req.body;
 
-        if (!restaurant_id || !name || !price) {
+        if (!restaurant_id || !name || price === undefined || price === null) {
             return res.status(400).json({
                 success: false,
                 message: 'Restaurant ID, dish name and price are required.',
@@ -127,22 +126,6 @@ exports.createDish = async (req, res) => {
             }
         }
 
-        let parsedCustomization = null;
-
-        if (customization) {
-            try {
-                parsedCustomization =
-                    typeof customization === 'object'
-                        ? customization
-                        : JSON.parse(customization);
-            } catch (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Customization must be valid JSON.',
-                });
-            }
-        }
-
         const dishResult = await query(
             `
             INSERT INTO dishes (
@@ -152,12 +135,11 @@ exports.createDish = async (req, res) => {
                 description,
                 price,
                 prep_time_minutes,
-                customization,
                 available,
                 created_by,
                 updated_by
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $9)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
             `,
             [
@@ -167,9 +149,9 @@ exports.createDish = async (req, res) => {
                 description || null,
                 price,
                 prep_time_minutes || null,
-                parsedCustomization ? JSON.stringify(parsedCustomization) : null,
                 available === undefined ? true : available,
                 req.user.id,
+                req.user.id
             ]
         );
 
@@ -334,9 +316,59 @@ exports.getDishById = async (req, res) => {
             });
         }
 
+        const dish = result.rows[0];
+
+        const modifierGroupsResult = await query(
+            `
+            SELECT
+                mg.id,
+                mg.name,
+                mg.required,
+                mg.min_selections,
+                mg.max_selections,
+                mg.created_at,
+
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', m.id,
+                            'name', m.name,
+                            'price_delta', m.price_delta,
+                            'available', m.available,
+                            'created_at', m.created_at,
+                            'updated_at', m.updated_at
+                        )
+                        ORDER BY m.created_at ASC
+                    ) FILTER (WHERE m.id IS NOT NULL),
+                    '[]'
+                ) AS modifiers
+
+            FROM modifier_groups mg
+
+            LEFT JOIN modifiers m
+                ON m.modifier_group_id = mg.id
+
+            WHERE mg.dish_id = $1
+
+            GROUP BY
+                mg.id,
+                mg.name,
+                mg.required,
+                mg.min_selections,
+                mg.max_selections,
+                mg.created_at
+
+            ORDER BY mg.created_at ASC
+            `,
+            [id]
+        );
+
         return res.status(200).json({
             success: true,
-            data: result.rows[0],
+            data: {
+                ...dish,
+                modifier_groups: modifierGroupsResult.rows,
+            },
         });
     } catch (error) {
         console.error('Get Dish By ID Error:', error);
@@ -358,7 +390,6 @@ exports.updateDish = async (req, res) => {
             description,
             price,
             prep_time_minutes,
-            customization,
             available
         } = req.body;
 
@@ -413,12 +444,6 @@ exports.updateDish = async (req, res) => {
                 file: req.file,
                 key: newKey,
             });
-        }
-
-        let parsedCustomization = existingDish.customization;
-
-        if (customization !== undefined) {
-            parsedCustomization = parseCustomization(customization);
         }
 
         const result = await query(

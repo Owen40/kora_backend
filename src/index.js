@@ -14,11 +14,12 @@ const userRoutes = require('./Routes/userRoutes');
 const addressRoutes = require('./Routes/addressRoutes');
 const allergenRoutes = require('./Routes/allergenRoutes');
 const adminDashRoutes = require('./Routes/adminDashRoutes');
+const modifierRoutes = require('./Routes/modifierRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5070;
 
-const allowedOrigins = [ 'https://kora.bmsdyna.live', 'http://localhost:3000', 'http://localhost:5173', 'https://kora-admin-nine.vercel.app' ];
+const allowedOrigins = [ 'https://kora-admin.bmsdyna.live', 'http://localhost:3000', 'http://localhost:5173', 'https://kora-admin-nine.vercel.app' ];
 
 app.use(cors({ origin: allowedOrigins }));
 app.set('trust proxy', 1);
@@ -51,6 +52,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/allergens', allergenRoutes);
 app.use('/api/admin', adminDashRoutes);
+app.use('/api/dish-modifiers', modifierRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
