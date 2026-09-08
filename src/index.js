@@ -18,7 +18,7 @@ const adminDashRoutes = require('./Routes/adminDashRoutes');
 const app = express();
 const PORT = process.env.PORT || 5070;
 
-const allowedOrigins = [ 'https://kora.bmsdyna.live', 'http://localhost:3000', 'http://localhost:5173', 'https://kora-admin-mvduk0amj-omuthami27-3169s-projects.vercel.app/' ];
+const allowedOrigins = [ 'https://kora.bmsdyna.live', 'http://localhost:3000', 'http://localhost:5173', 'https://kora-admin-nine.vercel.app' ];
 
 app.use(cors({ origin: allowedOrigins }));
 app.set('trust proxy', 1);
