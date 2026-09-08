@@ -8,6 +8,7 @@ CREATE TABLE users (
     phone VARCHAR(30),
     password TEXT NOT NULL,
     role VARCHAR(50) DEFAULT 'user',
+    last_login_at TIMESTAMPZ
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -345,7 +346,7 @@ CREATE INDEX idx_order_item_modifiers_modifier_id ON order_item_modifiers(modifi
 CREATE TABLE carts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    restaurant_id UUID NOT  REFERENCES restaurants(id) ON DELETE CASCADE,
+    restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (user_id, restaurant_id)
